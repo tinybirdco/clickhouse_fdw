@@ -148,6 +148,7 @@ ch_http_response_t *ch_http_simple_query(ch_http_connection_t *conn, const char 
 	curl_easy_setopt(conn->curl, CURLOPT_PATH_AS_IS, 1);
 	curl_easy_setopt(conn->curl, CURLOPT_URL, url);
 	curl_easy_setopt(conn->curl, CURLOPT_NOSIGNAL, 1);
+	curl_easy_setopt(conn->curl, CURLOPT_USERAGENT, "tb-postgres");
 
 	/* variable */
 	curl_easy_setopt(conn->curl, CURLOPT_WRITEDATA, resp);
