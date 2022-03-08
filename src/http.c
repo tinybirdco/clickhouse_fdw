@@ -50,7 +50,7 @@ size_t write_data(void *contents, size_t size, size_t nmemb, void *userp)
 	return realsize;
 }
 
-ch_http_connection_t *ch_http_connection(char *host, int port, char *username, char *password)
+ch_http_connection_t *ch_http_connection(char *host, int port, char *username, char *password, char *database)
 {
 	int n;
 	char *connstring = NULL;
@@ -100,6 +100,7 @@ ch_http_connection_t *ch_http_connection(char *host, int port, char *username, c
 
 	conn->base_url = connstring;
 	conn->base_url_len = strlen(conn->base_url);
+	conn->database = database;
 
 	return conn;
 
@@ -137,8 +138,10 @@ ch_http_response_t *ch_http_simple_query(ch_http_connection_t *conn, const char 
 	assert(conn && conn->curl);
 
 	/* construct url */
-	url = malloc(conn->base_url_len + 37 + 12 /* query_id + ?query_id= */);
-	sprintf(url, "%s?query_id=%s", conn->base_url, resp->query_id);
+	int database_string_size = 10 + strlen(conn->database);
+	int query_id_string_size =  37 + 12; /* query_id + ?query_id= */
+	url = malloc(conn->base_url_len + query_id_string_size + database_string_size);
+	sprintf(url, "%s?query_id=%s&database=%s", conn->base_url, resp->query_id, conn->database);
 
 	/* constant */
 	errbuffer[0] = '\0';

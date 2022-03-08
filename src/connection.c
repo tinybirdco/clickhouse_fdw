@@ -322,6 +322,8 @@ connstring_parse(const char *connstring)
 			details->username = pstrdup(pval);
 		} else if (strcmp(pname, "password") == 0) {
 			details->password = pstrdup(pval);
+		} else if (strcmp(pname, "dbname") == 0) {
+			details->dbname = pstrdup(pval);
 		}
 	}
 
