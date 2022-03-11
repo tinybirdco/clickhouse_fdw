@@ -85,7 +85,7 @@ chfdw_http_connect(ch_connection_details *details)
 {
 	ch_connection res;
 	ch_http_connection_t *conn = ch_http_connection(details->host, details->port,
-            details->username, details->password);
+            details->username, details->password, details->dbname);
 	if (!initialized)
 	{
 		initialized = true;
