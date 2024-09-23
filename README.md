@@ -1,6 +1,3 @@
-![CI](https://github.com/adjust/clickhouse_fdw/workflows/CI/badge.svg)
-
-
 `clickhouse_fdw` - ClickHouse Foreign Data Wrapper for PostgreSQL
 =================================================================
 
@@ -9,7 +6,7 @@ The `clickhouse_fdw` is open-source. It is a Foreign Data Wrapper (FDW) for `Cli
 Supported PostgreSQL Versions
 ------------------------------
 
-PostgreSQL 11-13
+PostgreSQL 11-14
 
 Installation
 ----------------
@@ -23,7 +20,7 @@ uses UTC timezone.
 ###### Installing `clickhouse_fdw`
 
 ```
-git clone https://github.com/adjust/clickhouse_fdw.git
+git clone git@github.com:ildus/clickhouse_fdw.git
 cd clickhouse_fdw
 mkdir build && cd build
 cmake ..
@@ -78,7 +75,7 @@ tax_bills_nyc and tax_bills:
         condo String,
         insertion_date DateTime MATERIALIZED now()
     )
-    ENGINE = MergeTree PARTITION BY tax_class ORDER BY (owner_name)
+    ENGINE = MergeTree PARTITION BY tax_class ORDER BY (owner_name);
 
     CREATE TABLE tax_bills
     (

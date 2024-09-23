@@ -11,20 +11,30 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        pg: [13, 12, 11]
+        pg: [14, 13, 12, 11]
         check_code: ["false", "clang"]
 
     name: Test clickhouse_fdw
     runs-on: ubuntu-latest
+    container: docker:latest
+
+    services:
+      clickhouse:
+        image: clickhouse/clickhouse-server:latest
+        ports:
+          - 8123:8123
+          - 9000:9000
+        options: >-
+          --health-cmd "clickhouse-client --host localhost --query 'SELECT 1'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - uses: actions/checkout@v2
-      - name: Pull `clickhouse`
-        run: docker-compose pull clickhouse
-      - name: Run `clickhouse`
-        run: docker-compose up -d
+
       - name: Build an image with the source code
         run: docker-compose -f docker-compose-extra.yml  build --build-arg CHECK_CODE=${{ matrix.check_code }} --build-arg PG_VERSION=${{ matrix.pg }} tests
+
       - name: Run the tests
         run: docker-compose -f docker-compose-extra.yml run tests
-      - name: Stop clickhouse
-        run: docker-compose stop clickhouse

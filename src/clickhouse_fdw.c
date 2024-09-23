@@ -26,6 +26,9 @@
 #include "nodes/makefuncs.h"
 #include "nodes/nodeFuncs.h"
 #include "optimizer/cost.h"
+#if PG_VERSION_NUM >= 140000
+#include "optimizer/appendinfo.h"
+#endif  /* PG_VERSION_NUM */
 #include "optimizer/pathnode.h"
 #include "optimizer/paths.h"
 #include "optimizer/planmain.h"
@@ -765,7 +768,11 @@ clickhouseBeginForeignScan(ForeignScanState *node, int eflags)
 	else
 		rtindex = bms_next_member(fsplan->fs_relids, -1);
 	rte = rt_fetch(rtindex, estate->es_range_table);
+#if PG_VERSION_NUM >= 160000
+	userid = OidIsValid(fsplan->checkAsUser) ? fsplan->checkAsUser : GetUserId();
+#else
 	userid = rte->checkAsUser ? rte->checkAsUser : GetUserId();
+#endif
 
 	/* Get info about foreign table. */
 	table = GetForeignTable(rte->relid);
@@ -1117,7 +1124,11 @@ clickhouseBeginForeignModify(ModifyTableState *mtstate,
 	                                rte,
 	                                resultRelInfo,
 	                                mtstate->operation,
+#if PG_VERSION_NUM < 140000
 	                                mtstate->mt_plans[subplan_index]->plan,
+#else
+	                                outerPlanState(mtstate)->plan,
+#endif
 	                                query,
 	                                target_attrs,
 									table_name);
@@ -1370,7 +1381,11 @@ create_foreign_modify(EState *estate,
 	 * Identify which user to do the remote access as.  This should match what
 	 * ExecCheckRTEPerms() does.
 	 */
+#if PG_VERSION_NUM >= 160000
+	userid = ExecGetResultRelCheckAsUser(rri, estate);
+#else
 	userid = rte->checkAsUser ? rte->checkAsUser : GetUserId();
+#endif
 
 	/* Get info about foreign table. */
 	table = GetForeignTable(RelationGetRelid(rel));
@@ -2157,9 +2172,16 @@ foreign_grouping_ok(PlannerInfo *root, RelOptInfo *grouped_rel,
 			 * RestrictInfos, so we must make our own.
 			 */
 			Assert(!IsA(expr, RestrictInfo));
-			rinfo = make_restrictinfo(expr,
+			rinfo = make_restrictinfo(
+#if PG_VERSION_NUM >= 140000
+									  root,
+#endif
+									  expr,
 									  true,
 									  false,
+#if PG_VERSION_NUM >= 160000
+									  false,
+#endif
 									  false,
 									  root->qual_security_level,
 									  grouped_rel->relids,
