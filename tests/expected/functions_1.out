@@ -233,11 +233,27 @@ SELECT uniq_exact(a) FILTER(WHERE b>1) FROM t1;
           1
 (1 row)
 
+EXPLAIN (VERBOSE, COSTS OFF) SELECT c as d1 FROM t1 WHERE c >= to_timestamp('2019-01-01 00:00:00.000000', 'YYYY-MM-DD HH24:MI:SS.US') GROUP BY d1 ORDER BY d1;
+                                                                   QUERY PLAN
+------------------------------------------------------------------------------------------------------------------------------------------------
+ Foreign Scan
+   Output: c
+   Relations: Aggregate on (t1)
+   Remote SQL: SELECT c FROM regression.t1 WHERE ((c >= parseDateTimeBestEffortOrNull('2019-01-01 00:00:00.000000'))) GROUP BY c ORDER BY c ASC
+(4 rows)
+
+SELECT c as d1 FROM t1 WHERE c >= to_timestamp('2019-01-01 00:00:00.000000', 'YYYY-MM-DD HH24:MI:SS.US') GROUP BY d1 ORDER BY d1;
+         d1
+---------------------
+ 2019-01-01 10:00:00
+ 2019-01-02 10:00:00
+(2 rows)
+
 EXPLAIN (VERBOSE, COSTS OFF) SELECT date_trunc('dAy', c at time zone 'UTC') as d1 FROM t1 GROUP BY d1 ORDER BY d1;
                                                                                 QUERY PLAN                                                                                
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  Foreign Scan
-   Output: (date_trunc('dAy'::text, (c AT TIME ZONE 'UTC'::text)))
+   Output: (date_trunc('dAy'::text, timezone('UTC'::text, c)))
    Relations: Aggregate on (t1)
    Remote SQL: SELECT toStartOfDay(toTimeZone(c, 'UTC')) FROM regression.t1 GROUP BY (toStartOfDay(toTimeZone(c, 'UTC'))) ORDER BY toStartOfDay(toTimeZone(c, 'UTC')) ASC
 (4 rows)
@@ -253,7 +269,7 @@ EXPLAIN (VERBOSE, COSTS OFF) SELECT date_trunc('day', c at time zone 'UTC') as d
                                                                                 QUERY PLAN                                                                                
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  Foreign Scan
-   Output: (date_trunc('day'::text, (c AT TIME ZONE 'UTC'::text)))
+   Output: (date_trunc('day'::text, timezone('UTC'::text, c)))
    Relations: Aggregate on (t2)
    Remote SQL: SELECT toStartOfDay(toTimeZone(c, 'UTC')) FROM regression.t1 GROUP BY (toStartOfDay(toTimeZone(c, 'UTC'))) ORDER BY toStartOfDay(toTimeZone(c, 'UTC')) ASC
 (4 rows)
@@ -345,12 +361,12 @@ SELECT date_part('minuTe'::text, timezone('UTC'::text, c)) as d1 FROM t2 GROUP B
 (1 row)
 
 EXPLAIN (VERBOSE, COSTS OFF) SELECT date_trunc('SeCond', c at time zone 'UTC') as d1 FROM t1 GROUP BY d1 ORDER BY d1;
-                                                                                                              QUERY PLAN                                                                                                              
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+                                                                                                                        QUERY PLAN
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  Foreign Scan
-   Output: (date_trunc('SeCond'::text, (c AT TIME ZONE 'UTC'::text)))
+   Output: (date_trunc('SeCond'::text, timezone('UTC'::text, c)))
    Relations: Aggregate on (t1)
-   Remote SQL: SELECT toStartOfSecond(toDateTime64(toTimeZone(c, 'UTC'), 1)) FROM regression.t1 GROUP BY (toStartOfSecond(toDateTime64(toTimeZone(c, 'UTC'), 1))) ORDER BY toStartOfSecond(toDateTime64(toTimeZone(c, 'UTC'), 1)) ASC
+   Remote SQL: SELECT toStartOfSecond(toDateTime64(toTimeZone(c, 'UTC'), 1, 'UTC')) FROM regression.t1 GROUP BY (toStartOfSecond(toDateTime64(toTimeZone(c, 'UTC'), 1, 'UTC'))) ORDER BY toStartOfSecond(toDateTime64(toTimeZone(c, 'UTC'), 1, 'UTC')) ASC
 (4 rows)
 
 SELECT date_trunc('SeCond', c at time zone 'UTC') as d1 FROM t1 GROUP BY d1 ORDER BY d1;
