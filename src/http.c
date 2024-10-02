@@ -100,6 +100,9 @@ ch_http_connection_t *ch_http_connection(char *host, int port, char *username, c
 
 	conn->base_url = connstring;
 	conn->base_url_len = strlen(conn->base_url);
+
+	if (database == NULL)
+		database = "default";  // Set default value
 	conn->database = malloc(strlen(database));
 	strcpy(conn->database, database);
 

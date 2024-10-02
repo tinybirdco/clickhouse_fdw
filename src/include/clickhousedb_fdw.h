@@ -270,6 +270,7 @@ typedef enum {
 	CF_AJTIME_TO_TIMESTAMP,	/* ajtime to timestamp */
 	CF_DATE_TRUNC,		/* date_trunc function */
 	CF_DATE_PART,		/* date_part function */
+	CF_EXTRACT,		/* extract function */
 	CF_TIMESTAMPTZ_PL_INTERVAL,	/* timestamptz + interval */
 	CF_TIMEZONE,		/* timezone */
 	CF_TO_TIMESTAMP,

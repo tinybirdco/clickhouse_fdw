@@ -27,6 +27,8 @@
 #define F_TIMESTAMP_ZONE 2069
 #define F_TIMESTAMPTZ_ZONE 1159
 #define F_TIMESTAMPTZ_PART 1171
+#define F_TIMESTAMP_EXTRACT 6202
+#define F_TIMESTAMPTZ_EXTRACT 6203
 #define F_TO_TIMESTAMP 1778
 #define F_ARRAY_POSITION 3277
 #define F_STRPOS 868
@@ -99,6 +101,8 @@ CustomObjectDef *chfdw_check_for_custom_function(Oid funcid)
 		{
 			case F_TIMESTAMP_TRUNC:
 			case F_TIMESTAMPTZ_TRUNC:
+			case F_TIMESTAMP_EXTRACT:
+			case F_TIMESTAMPTZ_EXTRACT:
 			case F_TIMESTAMP_ZONE:
 			case F_TIMESTAMPTZ_ZONE:
 			case F_TIMESTAMP_PART:
@@ -142,6 +146,13 @@ CustomObjectDef *chfdw_check_for_custom_function(Oid funcid)
 			case F_TIMESTAMP_PART:
 			{
 				entry->cf_type = CF_DATE_PART;
+				entry->custom_name[0] = '\1';
+				break;
+			}
+			case F_TIMESTAMPTZ_EXTRACT:
+			case F_TIMESTAMP_EXTRACT:
+			{
+				entry->cf_type = CF_EXTRACT;
 				entry->custom_name[0] = '\1';
 				break;
 			}
